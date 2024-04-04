@@ -102,28 +102,32 @@ play(audio)
 
 # # Import the playsound module to play the audio file
 # # pip install playsound or pip install playsound==1.2.2
-# import playsound
+# # import playsound
 
 # # Import the gTTS module to use the google text-to-speech API for converting text to speech
 # # pip install gTTS
 # import gtts
 
 # input_lang = "hi"
-# output_lang = "fr"
+# output_lang = "bn"
 # recognizer = sr.Recognizer()
 
 # with sr.Microphone() as source:
 #     print("Speak now...")
-#     voice = recognizer.listen(source)
+#     voice = recognizer.listen(source, timeout=5)
 #     text = recognizer.recognize_google(voice, language=input_lang)
-#     print(text)
+#     print("Recognized text:",text)
 
 
 # # print(googletrans.LANGUAGES)
 # translator = googletrans.Translator()
 # translation = translator.translate(text, dest=output_lang)
-# print(translation)
+# print("Translated text:",translation)
 
 # converted_audio = gtts.gTTS(translation.text, lang=output_lang)
 # converted_audio.save("demo.mp3")
-# playsound.playsound("demo.mp3")
+# # playsound.playsound("demo.mp3")
+
+# # Load the translated audio file and play it
+# audio = AudioSegment.from_mp3("demo.mp3")
+# play(audio)

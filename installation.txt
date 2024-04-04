@@ -1,0 +1,26 @@
+check python versions installed 
+
+pyenv versions
+
+1. Create Virtualenv -
+
+pyenv virtualenv 3.9.18 venv-name
+
+2. Activating & Deactivating Virtualenv
+
+pyenv activate venv-name
+
+To deactivate run the following command.
+
+pyenv deactivate
+
+To automatically activate local env when you enter your local development folder of your project, run the following command inside your folder.
+
+pyenv local venv-name
+
+
+
+if getting below error, install - pip install googletrans==3.1.0a0
+
+code = self.RE_TKK.search(r.text).group(1).replace('var ', '')
+AttributeError: 'NoneType' object has no attribute 'group'

@@ -1,98 +1,95 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI::language translator</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI::language translator</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
     integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 </head>
-
 <body>
   <div class="container"><br>
     <h1>Speech in any language and Listen in selected language using AI.</h1>
     <br><br>
-    <button id="startButton" class="btn btn-primary" onclick="startRecording()">Start Speech</button>
-    <button id="stopButton" class="btn btn-primary" onclick="stopRecording()" disabled>Stop Speech</button>
-    <button id="playButton" class="btn btn-primary" onclick="playRecordedAudio()" disabled>Play Speech</button>
-    <div id="recordingStatus"></div>
-    <br>
-
-    <div style="width: 25%;">
-      <select id="voices" class="form-select" aria-label="Default select example">
+  
+    <div style="width:20%;" class="d-inline-flex mt-2">
+      <select id="language" class="form-select" aria-label="Default select example">
         <option>-- Select Output Voice --</option>
-        <option>-- Assamese --</option>
-        <option>-- Bangla --</option>
-        <option>-- Gujarati --</option>
-        <option>-- Hindi --</option>
-        <option>-- Kannada --</option>
-        <option>-- Malayalam --</option>
-        <option>-- Marathi --</option>
+        <option value="bn">-- Bengla --</option>
+        <option value="en">-- English --</option>
+        <option value="fr">-- French --</option>
+        <option value="hi">-- Hindi --</option>
+        <option value="es">-- Spanish --</option>
+        <option value="de">-- German --</option>
+        <option value="it">-- Italian --</option>
+        <option value="ja">-- Japanese --</option>
+        <option value="ml">-- Malayalam --</option>
+        <option value="mr">-- Marathi --</option>
       </select>
-    </div>
+    </div> &nbsp;&nbsp;&nbsp;&nbsp;
 
+    <button class="btn btn-primary" id="start-recording">Start Recording</button>
+    <button class="btn btn-primary" id="stop-recording" disabled>Stop Recording</button>
+    <button class="btn btn-primary" type="button" id="play-translated-speech" disabled>
+      <span class="spinner-grow spinner-grow-sm" aria-hidden="true" style="display: none;"></span>
+      <span role="status" class="play-translated-speech">Play Translated Speech</span>
+    </button>
 
-    <script>
-      let mediaRecorder;
-      let audioChunks = [];
-      let isRecording = false;
+    <br/><br/><br/>
 
-      function startRecording() {
-        navigator.mediaDevices.getUserMedia({ audio: true })
-          .then((stream) => {
-            mediaRecorder = new MediaRecorder(stream);
-            mediaRecorder.ondataavailable = handleDataAvailable;
-            mediaRecorder.start();
-            isRecording = true;
-            updateRecordingStatus();
-            document.getElementById('playButton').disabled = true; // Disable play button during recording
-          })
-          .catch((error) => {
-            console.error('Error accessing microphone:', error);
-          });
+    <div id="output" style="font-weight: bolder;font-size: 25px;"></div>
+  </div>
+  
+  <script>
+    $(document).ready(function(){
 
-        document.getElementById('startButton').disabled = true;
-        document.getElementById('stopButton').disabled = false;
-      }
-
-      function stopRecording() {
-        if (mediaRecorder && isRecording) {
-          mediaRecorder.stop();
-          isRecording = false;
-          updateRecordingStatus();
-          document.getElementById('playButton').disabled = false; // Enable play button after recording
-        }
-      }
-
-      function handleDataAvailable(event) {
-        if (event.data.size > 0) {
-          audioChunks.push(event.data);
-        }
-      }
-
-      function updateRecordingStatus() {
-        const statusElement = document.getElementById('recordingStatus');
-        if (isRecording) {
-          statusElement.textContent = 'Recording...';
-        } else {
-          statusElement.textContent = 'Stop recording';
-        }
-      }
-
-      function playRecordedAudio() {
-        if (audioChunks.length === 0) {
-          console.log('No recorded audio available.');
+      $('#start-recording').click(function(){
+        if( $('#language').val() == '-- Select Output Voice --'){
+          alert('Please select a output voice language.');
           return;
         }
 
-        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-        const audioUrl = URL.createObjectURL(audioBlob);
-        const audioElement = new Audio(audioUrl);
-        audioElement.play();
-      }
-    </script>
-  </div>
-</body>
+        $('#start-recording').attr('disabled', true);
+        $('#stop-recording').attr('disabled', false);
 
+        var language = document.getElementById("language").value;
+        fetch("/start-recording", {method: "POST", body: JSON.stringify({ language: language }),
+            headers: {
+                "Content-Type": "application/json"
+            }
+        })
+        .then(response => response.json())
+        .then(data => console.log(data))
+        .catch(error => {
+              console.error('Error:', error);
+        });
+      });
+
+      $('#stop-recording').click(function(){
+          $.post('/stop-recording', function(data) {
+            $('#start-recording').attr('disabled', true);
+            $('#stop-recording').attr('disabled', true);
+            $('#play-translated-speech').attr('disabled', false);
+            console.log(data.message);
+          });
+      });
+
+      $('#play-translated-speech').click(function(){
+        $('.play-translated-speech').html('Loading...'); 
+        $('.spinner-grow').show();
+          $.post('/play-translated-speech', function(data) {
+              console.log(data);
+              document.getElementById("output").innerText = data.translated_text;
+              $('#start-recording').attr('disabled', false);
+              $('#stop-recording').attr('disabled', true);
+              $('#play-translated-speech').attr('disabled', true);
+              $('.play-translated-speech').html('Playing Translated Speech');
+              $('.spinner-grow').hide();
+          });
+      });
+
+    });
+  </script>
+</body>
 </html>
