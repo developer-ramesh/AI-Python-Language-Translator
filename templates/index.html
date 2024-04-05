@@ -76,7 +76,7 @@
       });
 
       $('#play-translated-speech').click(function(){
-        $('.play-translated-speech').html('Loading ...'); 
+        $('.play-translated-speech').html('Loading...'); 
         $('.spinner-grow').show();
           $.post('/play-translated-speech', function(data) {
               console.log(data);
