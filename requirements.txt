@@ -1,9 +1,8 @@
-pip install googletrans
+pip install flask
+pip install googletrans==3.1.0a0
+#pip install googletrans
 pip install SpeechRecognition
 pip install gtts
 pip install pydub
 pip install pyaudio
-
-
-pip install googletrans==3.1.0a0
-pip install playsound==1.2.2
+#pip install playsound==1.2.2

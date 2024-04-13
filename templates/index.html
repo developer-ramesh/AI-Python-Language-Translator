@@ -1,5 +1,177 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI::language translator</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous"/>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <br/>
+      <h1>Speech in any language and Listen in selected language using AI.</h1>
+      <br /><br />
+
+      <div class="row">
+        <div class="row">
+          <div class="col-5">
+            <select id="input_language" class="form-select d-inline mb-3" aria-label="Default select example">
+              <option>-- Select Input Voice --</option>
+              <option value="bn">-- Bengla --</option>
+              <option value="hi">-- Hindi --</option>
+              <option value="ml">-- Malayalam --</option>
+              <option value="mr">-- Marathi --</option>
+              <option value="ta">-- Tamil --</option>
+              <option value="te">-- Telugu --</option>
+              <option value="ur">-- Urdu --</option>
+              <option value="gu">-- Gujarati --</option>
+              <option value="kn">-- Kannada --</option>
+              <option value="or">-- Odia --</option>
+              <option value="as">-- Assamese --</option>
+              <option value="ne">-- Nepali --</option>
+              <option value="en">-- English --</option>
+              <option value="fr">-- French --</option>
+              <option value="es">-- Spanish --</option>
+              <option value="de">-- German --</option>
+              <option value="it">-- Italian --</option>
+              <option value="ja">-- Japanese --</option>
+              <option value="zh-tw">-- Chinese</option>
+            </select>
+            <select id="output_language" class="form-select d-inline mb-3" aria-label="Default select example">
+              <option>-- Select Output Voice --</option>
+              <option value="bn">-- Bengla --</option>
+              <option value="hi">-- Hindi --</option>
+              <option value="ml">-- Malayalam --</option>
+              <option value="mr">-- Marathi --</option>
+              <option value="ta">-- Tamil --</option>
+              <option value="te">-- Telugu --</option>
+              <option value="ur">-- Urdu --</option>
+              <option value="gu">-- Gujarati --</option>
+              <option value="kn">-- Kannada --</option>
+              <option value="or">-- Odia --</option>
+              <option value="as">-- Assamese --</option>
+              <option value="ne">-- Nepali --</option>
+              <option value="en">-- English --</option>
+              <option value="fr">-- French --</option>
+              <option value="es">-- Spanish --</option>
+              <option value="de">-- German --</option>
+              <option value="it">-- Italian --</option>
+              <option value="ja">-- Japanese --</option>
+              <option value="zh-tw">-- Chinese</option>
+            </select>
+          </div>
+          <div class="col-5">
+            <img src="/static/alisten.gif" height="150px" style="display: none;" class="listen" />
+          </div>
+        </div>
+        <div class="col-12">
+          <button class="btn btn-primary d-inline mb-3" id="start-recording"> Start Recording </button>
+          <button class="btn btn-primary d-inline mb-3" id="stop-recording" disabled> Stop Recording </button>
+          <button class="btn btn-primary d-inline mb-3" type="button" id="play-translated-speech" disabled>
+            <span class="spinner-grow spinner-grow-sm" aria-hidden="true" style="display: none"></span>
+            <span role="status" class="play-translated-speech"> Play Translated Speech </span> 
+          </button>
+          
+          <div id="output" style="font-size: 28px;margin-bottom: 20px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      $(document).ready(function () {
+        let mediaRecorder;
+        let recordedChunks = [];
+
+        // Get access to the user's microphone and start recording
+        async function startRecording() {
+          if ($("#input_language").val() == "-- Select Input Voice --") {
+            alert("Please select a input voice language.");
+            return;
+          }
+
+          if ($("#output_language").val() == "-- Select Output Voice --") {
+            alert("Please select a output voice language.");
+            return;
+          }
+
+          $(".listen").show();
+          const stream = await navigator.mediaDevices.getUserMedia({
+            audio: true,
+          });
+          mediaRecorder = new MediaRecorder(stream);
+
+          mediaRecorder.addEventListener("dataavailable", (event) => {
+            if (event.data.size > 0) {
+              recordedChunks.push(event.data);
+            }
+          });
+
+          mediaRecorder.addEventListener("stop", () => {
+            const audioBlob = new Blob(recordedChunks, { type: "audio/wav" });
+            uploadAudio(audioBlob);
+          });
+
+          mediaRecorder.start();
+          document.getElementById("start-recording").disabled = true;
+          document.getElementById("stop-recording").disabled = false;
+        }
+
+        // Stop recording
+        function stopRecording() {
+          mediaRecorder.stop();
+          document.getElementById("start-recording").disabled = true;
+          document.getElementById("stop-recording").disabled = true;
+          $(".listen").hide();
+        }
+
+        // Upload the recorded audio to the server
+        async function uploadAudio(blob) {
+          $(".play-translated-speech").html("Loading...");
+          $(".spinner-grow").show();
+
+          const formData = new FormData();
+          formData.append("audio_data", blob);
+          formData.append("input_language",document.getElementById("input_language").value);
+          formData.append("output_language",document.getElementById("output_language").value);
+          const response = await fetch("/upload-audio", {
+            method: "POST",
+            body: formData,
+          });
+
+          const data = await response.json();
+          document.getElementById("output").innerText = data.translated_text;
+
+          // Find the existing audio element
+          var existingAudio = document.querySelector("audio");
+          // Remove the existing audio element from the DOM
+          if (existingAudio) {
+            existingAudio.parentNode.removeChild(existingAudio);
+          }
+
+          //play Audio
+          audio = new Audio(data.audio_file);
+          audio.controls = true;
+          audio.play();
+          document.getElementById("output").after(audio);
+          console.log(data.message);
+          $(".play-translated-speech").html("Playing Translated Speech");
+          $(".spinner-grow").hide();
+          document.getElementById("start-recording").disabled = false;
+          mediaRecorder;
+          recordedChunks = [];
+        }
+
+        // Event listeners for buttons
+        document.getElementById("start-recording").addEventListener("click", startRecording);
+        document.getElementById("stop-recording").addEventListener("click", stopRecording);
+      });
+    </script>
+  </body>
+</html>
+
+<!-- <!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -92,4 +264,4 @@
     });
   </script>
 </body>
-</html>
+</html> -->

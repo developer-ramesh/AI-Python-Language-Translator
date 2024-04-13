@@ -24,3 +24,14 @@ if getting below error, install - pip install googletrans==3.1.0a0
 
 code = self.RE_TKK.search(r.text).group(1).replace('var ', '')
 AttributeError: 'NoneType' object has no attribute 'group'
+
+
+====================================== Second Approach ====================================================================================
+
+Step 1. pyenv local 3.9.18
+
+Step 2. python -m venv virtualenv
+
+Step 3. source virtualenv/bin/activate
+
+Step 4. pip install -r requirements.txt
