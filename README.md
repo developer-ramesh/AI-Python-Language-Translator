@@ -6,4 +6,4 @@ Speech in any language and Listen in your desire language using AI Python.
 
  <img src="https://github.com/developer-ramesh/AI-Python-Language-Translator/blob/main/Desktop-view.png" alt="Desktop view">
 
- <img src="https://github.com/developer-ramesh/AI-Python-Language-Translator/blob/main/Mobile-view.png" alt="Mobile view">
+ <img src="https://github.com/developer-ramesh/AI-Python-Language-Translator/blob/main/Mobile-view.jpeg" alt="Mobile view">
